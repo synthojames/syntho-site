@@ -1,0 +1,146 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { formatDate } from '@lib/format';
+import { getPublishedProjects, type Project } from '@lib/projects';
+
+export const getStaticPaths = (async () => {
+  const projects = await getPublishedProjects();
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const { title, summary, kind, date, tags, cover, coverAlt, links, audio } = project.data;
+const { Content } = await render(project);
+---
+
+<BaseLayout title={title} description={summary} image={cover?.src}>
+  <article class="container page">
+    <a class="back" href="/projects">
+      ← All projects
+    </a>
+
+    <header class="head">
+      <p class="meta">
+        <span class="kind">{kind}</span>
+        <time datetime={date.toISOString()}>{formatDate(date)}</time>
+      </p>
+      <h1>{title}</h1>
+      <p class="lede">{summary}</p>
+      {tags.length > 0 && (
+        <ul class="tags" aria-label="Tags">
+          {tags.map((t) => (
+            <li>{t}</li>
+          ))}
+        </ul>
+      )}
+      {links.length > 0 && (
+        <ul class="links">
+          {links.map((l) => (
+            <li>
+              <a href={l.href} rel="noopener" target="_blank">
+                {l.label} ↗
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </header>
+
+    {cover && (
+      <Image
+        class="cover"
+        src={cover}
+        alt={coverAlt ?? ''}
+        widths={[800, 1600]}
+        sizes="(min-width: 72rem) 72rem, 100vw"
+      />
+    )}
+
+    {audio && <audio class="player" controls preload="none" src={audio} />}
+
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .page {
+    display: grid;
+    gap: var(--space-8);
+    padding-block: var(--space-12) var(--space-16);
+  }
+
+  .back {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: var(--text-sm);
+  }
+
+  .back:hover {
+    color: var(--color-text);
+  }
+
+  .head {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .meta {
+    display: flex;
+    gap: var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .kind {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-accent-2);
+  }
+
+  h1 {
+    font-size: var(--text-xl);
+  }
+
+  .lede {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+  }
+
+  .tags,
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    list-style: none;
+    padding: 0;
+    font-size: var(--text-sm);
+  }
+
+  .tags li {
+    color: var(--color-text-muted);
+  }
+
+  .tags li::before {
+    content: '#';
+    color: var(--color-accent);
+  }
+
+  .cover {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+  }
+
+  .player {
+    width: 100%;
+  }
+</style>

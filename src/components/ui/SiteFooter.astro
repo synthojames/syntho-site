@@ -1,0 +1,53 @@
+---
+import { site, socials } from '@data/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container inner">
+    <p>
+      © {year} {site.name}
+    </p>
+    <ul aria-label="Elsewhere">
+      {socials.map((s) => (
+        <li>
+          <a href={s.href} rel="me noopener" target="_blank">
+            {s.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    padding-block: var(--space-6);
+  }
+
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  ul {
+    display: flex;
+    gap: var(--space-4);
+    list-style: none;
+    padding: 0;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  a:hover {
+    color: var(--color-text);
+  }
+</style>

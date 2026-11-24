@@ -1,0 +1,94 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { formatDate } from '@lib/format';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { title, summary, kind, date, cover, coverAlt } = project.data;
+---
+
+<article class="card">
+  {cover && (
+    <Image
+      src={cover}
+      alt={coverAlt ?? ''}
+      widths={[400, 800]}
+      sizes="(min-width: 48rem) 33vw, 100vw"
+    />
+  )}
+  <div class="body">
+    <p class="meta">
+      <span class="kind">{kind}</span>
+      <time datetime={date.toISOString()}>{formatDate(date)}</time>
+    </p>
+    <h3>
+      <a href={`/projects/${project.id}`}>{title}</a>
+    </h3>
+    <p class="summary">{summary}</p>
+  </div>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    transition:
+      border-color var(--duration) var(--ease-out),
+      transform var(--duration) var(--ease-out);
+  }
+
+  .card:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  .card :global(img) {
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  .body {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-6);
+  }
+
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .kind {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-accent-2);
+  }
+
+  h3 a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  /* Make the whole card clickable while keeping a single, accessible link. */
+  h3 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .summary {
+    color: var(--color-text-muted);
+  }
+</style>

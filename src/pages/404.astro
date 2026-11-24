@@ -1,0 +1,27 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Not found" description="This page does not exist.">
+  <div class="container page">
+    <h1>404</h1>
+    <p>
+      That page does not exist. <a href="/">Head home</a>.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    display: grid;
+    gap: var(--space-4);
+    place-content: center;
+    text-align: center;
+    min-height: 60vh;
+  }
+
+  h1 {
+    font-size: var(--text-hero);
+    color: var(--color-accent);
+  }
+</style>

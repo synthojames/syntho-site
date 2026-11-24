@@ -1,0 +1,63 @@
+---
+import HeroScene from '@components/three/HeroScene.astro';
+import NavTile from '@components/ui/NavTile.astro';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { nav, site } from '@data/site';
+---
+
+<BaseLayout hideHeader>
+  <section class="hero">
+    <HeroScene />
+    <div class="container content">
+      <h1>{site.name}</h1>
+      <p class="tagline">{site.description}</p>
+      <nav aria-label="Main" class="tiles">
+        {nav.map((item) => (
+          <NavTile {...item} />
+        ))}
+      </nav>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding-block: var(--space-16);
+  }
+
+  .content {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-6);
+    text-align: center;
+  }
+
+  h1 {
+    font-size: var(--text-hero);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(120deg, var(--color-text) 30%, var(--color-accent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .tagline {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--space-6);
+    width: min(100%, 44rem);
+    margin-top: var(--space-8);
+    text-align: left;
+  }
+</style>

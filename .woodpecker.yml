@@ -1,0 +1,44 @@
+# CI for syntho.moe, run by Woodpecker on the Gitea mirror of this repo.
+#   every push/PR: format check, lint, type-check
+#   push to main:  build the image with kaniko and push it to Harbor ci-builds,
+#                  tagged with the 8-char commit SHA. Releasing = bumping that tag in
+#                  nekocluster-gitops/apps/syntho-site/site.yaml.
+#
+# Repo secrets (Woodpecker UI → repo settings → Secrets):
+#   harbor_ci_builds_username, harbor_ci_builds_password  (Harbor ci-builds push robot)
+
+when:
+  - event: [push, pull_request, manual]
+
+clone:
+  - name: clone
+    image: harbor.nekocluster.internal/ci-builds/git-clone-nekocluster:2.9.2
+
+steps:
+  - name: verify
+    image: docker.io/library/node:26-alpine
+    environment:
+      ASTRO_TELEMETRY_DISABLED: '1'
+    commands:
+      - npm install -g "$(node -p "require('./package.json').packageManager")"
+      - pnpm install --frozen-lockfile
+      - pnpm format:check
+      - pnpm lint
+      - pnpm check
+
+  - name: publish
+    # VERIFY: tag of the kaniko-nekocluster image in Harbor (built from
+    # nekocluster-gitops/tools/kaniko-nekocluster, based on plugin-kaniko 1.3.0).
+    image: harbor.nekocluster.internal/ci-builds/kaniko-nekocluster:1.3.0
+    settings:
+      registry: harbor.nekocluster.internal
+      repo: ci-builds/syntho-site
+      tags: ${CI_COMMIT_SHA:0:8}
+      dockerfile: Dockerfile
+      username:
+        from_secret: harbor_ci_builds_username
+      password:
+        from_secret: harbor_ci_builds_password
+    when:
+      - event: push
+        branch: main

@@ -1,0 +1,76 @@
+---
+import '@styles/global.css';
+import SiteFooter from '@components/ui/SiteFooter.astro';
+import SiteHeader from '@components/ui/SiteHeader.astro';
+import { site } from '@data/site';
+
+interface Props {
+  /** Page title; omitted on the homepage so the site name stands alone. */
+  title?: string;
+  description?: string;
+  /** Hide the top nav bar (the homepage has its own big central nav). */
+  hideHeader?: boolean;
+  /** Absolute or root-relative URL of a social preview image. */
+  image?: string | undefined;
+}
+
+const { title, description = site.description, hideHeader = false, image } = Astro.props;
+
+const fullTitle = title ? `${title} · ${site.name}` : site.title;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = image ? new URL(image, Astro.site) : undefined;
+---
+
+<!doctype html>
+<html lang={site.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="generator" content={Astro.generator} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
+    {!hideHeader && <SiteHeader />}
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>
+
+<style>
+  main {
+    flex: 1;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: var(--space-4);
+    top: -100%;
+    z-index: 100;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-surface);
+    border-radius: var(--radius);
+  }
+
+  .skip-link:focus {
+    top: var(--space-4);
+  }
+</style>

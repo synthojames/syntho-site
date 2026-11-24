@@ -1,0 +1,112 @@
+---
+import ProjectCard from '@components/ui/ProjectCard.astro';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { getPublishedProjects } from '@lib/projects';
+
+const projects = await getPublishedProjects();
+const kinds = [...new Set(projects.map((p) => p.data.kind))];
+---
+
+<BaseLayout title="Projects" description="Code, music and other things I have made.">
+  <div class="container page">
+    <header>
+      <h1>Projects</h1>
+      <p class="lede">Code, music and other things I have made.</p>
+    </header>
+
+    {kinds.length > 1 && (
+      <div class="filters" role="group" aria-label="Filter by type" data-filters hidden>
+        <button type="button" aria-pressed="true" data-filter="all">
+          All
+        </button>
+        {kinds.map((kind) => (
+          <button type="button" aria-pressed="false" data-filter={kind}>
+            {kind}
+          </button>
+        ))}
+      </div>
+    )}
+
+    {projects.length === 0 ? (
+      <p>Nothing here yet. Check back soon.</p>
+    ) : (
+      <ul class="grid">
+        {projects.map((project) => (
+          <li data-kind={project.data.kind}>
+            <ProjectCard project={project} />
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</BaseLayout>
+
+<script>
+  // Progressive enhancement: filters are hidden until JS runs, so without JS
+  // the full list simply shows.
+  const group = document.querySelector<HTMLElement>('[data-filters]');
+  if (group) {
+    group.hidden = false;
+    const buttons = group.querySelectorAll<HTMLButtonElement>('button[data-filter]');
+    const items = document.querySelectorAll<HTMLElement>('[data-kind]');
+    group.addEventListener('click', (e) => {
+      const button = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-filter]');
+      if (!button) return;
+      const filter = button.dataset['filter'];
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+      items.forEach((item) => {
+        item.hidden = filter !== 'all' && item.dataset['kind'] !== filter;
+      });
+    });
+  }
+</script>
+
+<style>
+  .page {
+    display: grid;
+    gap: var(--space-8);
+    padding-block: var(--space-16);
+  }
+
+  h1 {
+    font-size: var(--text-xl);
+  }
+
+  .lede {
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .filters[hidden] {
+    display: none;
+  }
+
+  .filters button {
+    padding: var(--space-1) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    text-transform: capitalize;
+    cursor: pointer;
+  }
+
+  .filters button[aria-pressed='true'] {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: var(--space-6);
+    list-style: none;
+    padding: 0;
+  }
+</style>

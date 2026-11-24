@@ -110,13 +110,37 @@ Edit `src/styles/tokens.css`. Components only use the variables defined there.
 
 ## Deployment
 
-The `Dockerfile` builds the site with Node, then copies `dist/` into an unprivileged nginx image
-listening on `:8080` (`/healthz` is the probe endpoint).
+```
+GitHub (main) ──pull mirror, every 10 min──► Gitea neko/syntho-site ──webhook──► Woodpecker
+                                                                                 │
+     nekocluster-gitops PR (bump image tag) ◄── harbor.nekocluster.internal/ci-builds/syntho-site:<sha8>
+                    │
+                    └──► ArgoCD syncs apps/syntho-site ──► nginx pod ◄── cloudflared ◄── syntho.moe
+```
 
-CI builds the image and pushes it to Harbor. The Kubernetes manifests and ArgoCD Application live in
-the `nekocluster-gitops` repo under `apps/syntho-site/`, not in this repo.
+**GitHub is the only place to push.** Gitea is a read-only pull mirror that exists so the in-cluster
+Woodpecker can see the repo. After a PR merges on GitHub, the mirror picks it up within 10 minutes
+(or press _Synchronize Now_ in the Gitea repo settings) and Woodpecker runs:
+
+- **Every push / PR:** format check, lint, type-check.
+- **Push to `main`:** kaniko builds the `Dockerfile` and pushes the image to Harbor, tagged with the
+  first 8 characters of the commit SHA.
+
+The image builds the site with Node, then copies `dist/` into an unprivileged nginx image listening
+on `:8080` (`/healthz` is the probe endpoint).
+
+### Releasing
+
+Building an image does not deploy it. To release, bump the tag in
+`nekocluster-gitops/apps/syntho-site/site.yaml` to the new SHA, open a PR there and merge it. ArgoCD
+rolls the Deployment. Rolling back is the same, with an older tag.
+
+The Kubernetes manifests (Deployment, Service, NetworkPolicy, Cloudflare Tunnel) live in
+`nekocluster-gitops` under `apps/syntho-site/`, not in this repo. Public traffic reaches the site
+only through the Cloudflare Tunnel; there is no Traefik Ingress.
+
+### Local smoke test of the production image
 
 ```sh
-# Local smoke test of the production image
 docker build -t syntho-site . && docker run --rm -p 8080:8080 syntho-site
 ```

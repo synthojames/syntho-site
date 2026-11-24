@@ -1,0 +1,137 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { site, socials } from '@data/site';
+
+// TODO: replace placeholder content with real info.
+// To offer a downloadable résumé, drop resume.pdf into /public and uncomment the link below.
+const experience = [
+  {
+    role: 'Role title',
+    org: 'Organization',
+    period: '2024 – Present',
+    summary: 'One or two lines on what you did and the impact it had.',
+  },
+];
+
+const skills = ['Skill one', 'Skill two', 'Skill three'];
+---
+
+<BaseLayout title="About" description={`About ${site.name}: background, experience and skills.`}>
+  <div class="container page">
+    <header class="intro prose">
+      <h1>About</h1>
+      <p class="lede">
+        A short introduction goes here: who you are, what you work on, and what you are interested
+        in.
+      </p>
+      <!-- <p><a href="/resume.pdf" download>Download résumé (PDF)</a></p> -->
+    </header>
+
+    <section aria-labelledby="experience">
+      <h2 id="experience">Experience</h2>
+      <ol class="timeline">
+        {experience.map((job) => (
+          <li>
+            <div class="when">{job.period}</div>
+            <div>
+              <h3>
+                {job.role} <span class="org">· {job.org}</span>
+              </h3>
+              <p>{job.summary}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section aria-labelledby="skills">
+      <h2 id="skills">Skills</h2>
+      <ul class="chips">
+        {skills.map((s) => (
+          <li>{s}</li>
+        ))}
+      </ul>
+    </section>
+
+    <section aria-labelledby="contact">
+      <h2 id="contact">Elsewhere</h2>
+      <ul class="chips">
+        {socials.map((s) => (
+          <li>
+            <a href={s.href} rel="me noopener" target="_blank">
+              {s.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    display: grid;
+    gap: var(--space-12);
+    padding-block: var(--space-16);
+  }
+
+  h1 {
+    font-size: var(--text-xl);
+  }
+
+  h2 {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-6);
+  }
+
+  h3 {
+    font-size: var(--text-base);
+  }
+
+  .lede {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+  }
+
+  .timeline {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .timeline li {
+    display: grid;
+    grid-template-columns: minmax(8rem, 12rem) 1fr;
+    gap: var(--space-6);
+  }
+
+  @media (max-width: 40rem) {
+    .timeline li {
+      grid-template-columns: 1fr;
+      gap: var(--space-1);
+    }
+  }
+
+  .when,
+  .org {
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    list-style: none;
+    padding: 0;
+  }
+
+  .chips li {
+    padding: var(--space-1) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    font-size: var(--text-sm);
+  }
+</style>

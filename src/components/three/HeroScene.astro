@@ -1,0 +1,63 @@
+---
+/**
+ * Full-bleed decorative 3D background.
+ *
+ * - Three.js is dynamically imported, so it is a separate chunk that only
+ *   downloads on pages that use this component, after first paint.
+ * - Falls back to a CSS gradient when WebGL is unavailable.
+ * - Honors prefers-reduced-motion by rendering one static frame.
+ */
+---
+
+<div class="hero-scene" aria-hidden="true">
+  <canvas data-hero-scene></canvas>
+</div>
+
+<script>
+  function supportsWebGL(): boolean {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') ?? c.getContext('webgl'));
+    } catch {
+      return false;
+    }
+  }
+
+  const canvases = document.querySelectorAll<HTMLCanvasElement>('canvas[data-hero-scene]');
+  if (canvases.length > 0 && supportsWebGL()) {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const { mountHeroScene } = await import('@scripts/three/hero-scene');
+    for (const canvas of canvases) {
+      mountHeroScene(canvas, { animate: !reducedMotion });
+      canvas.classList.add('is-ready');
+    }
+  }
+</script>
+
+<style>
+  .hero-scene {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    /* Fallback / backdrop shown before (or instead of) WebGL. */
+    background:
+      radial-gradient(
+        60% 50% at 50% 40%,
+        color-mix(in srgb, var(--color-accent) 22%, transparent),
+        transparent 70%
+      ),
+      var(--color-bg);
+  }
+
+  canvas {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1.2s var(--ease-out);
+  }
+
+  canvas:global(.is-ready) {
+    opacity: 1;
+  }
+</style>

@@ -1,0 +1,67 @@
+---
+/** Large navigation card used for the homepage's central nav. */
+interface Props {
+  href: string;
+  label: string;
+  blurb: string;
+}
+
+const { href, label, blurb } = Astro.props;
+---
+
+<a class="tile" href={href}>
+  <span class="label">{label}</span>
+  <span class="blurb">{blurb}</span>
+  <span class="arrow" aria-hidden="true">
+    →
+  </span>
+</a>
+
+<style>
+  .tile {
+    position: relative;
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-8);
+    min-height: 11rem;
+    align-content: end;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-surface) 75%, transparent);
+    backdrop-filter: blur(6px);
+    color: var(--color-text);
+    text-decoration: none;
+    transition:
+      transform var(--duration) var(--ease-out),
+      border-color var(--duration) var(--ease-out),
+      background var(--duration) var(--ease-out);
+  }
+
+  .tile:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-surface-hover) 85%, transparent);
+  }
+
+  .label {
+    font-size: var(--text-xl);
+    font-weight: 700;
+  }
+
+  .blurb {
+    color: var(--color-text-muted);
+  }
+
+  .arrow {
+    position: absolute;
+    top: var(--space-6);
+    right: var(--space-6);
+    font-size: var(--text-lg);
+    color: var(--color-accent);
+    transition: transform var(--duration) var(--ease-out);
+  }
+
+  .tile:hover .arrow {
+    transform: translateX(4px);
+  }
+</style>
